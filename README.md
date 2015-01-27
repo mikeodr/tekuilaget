@@ -12,3 +12,6 @@ sudo pip install pynzbget
 ```
 
 Symlink or copy tekuilaget.py to your NZBGet scripts dir.
+
+For NZBGet configuration guidance, see the following
+[wiki guide](../../wiki/NZBGet-Configuration-Guide)
