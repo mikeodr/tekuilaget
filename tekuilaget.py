@@ -23,10 +23,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 """
 ############################################################################
 ### NZBGET SCHEDULER SCRIPT                                              ###
-# Script to check your Teksavvy cap and pause downloading during tracked hours.
+# Script to check your ISP cap and pause downloading during tracked hours.
 #
 # If threshold is exceeded then pause. Set this script to run at 8am. Set an
-# unpause scheduler to run at 2am to work with this script.
+# unpause scheduler to run at 2am to work with this script. (Or whatever hours
+# your ISP hours are).
+#
+# Supported ISPs: Teksavvy, Start.ca.
 #
 # Info about scheduler-script:
 # Author: Mike O'Driscoll (mike@mikeodriscoll.ca).
@@ -47,6 +50,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 # Enable NZBGet debug logging (yes, no)
 # Debug=no
 
+# Select ISP (teksavvy, startca).
+#
+# Select which support ISP you wish to use: Teksavvy, Start.ca
+#isp=teksavvy
+
 # Set your Teksavvy API Key
 #Key=
 
@@ -61,7 +69,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 ############################################################################
 
 from nzbget import ScanScript
-import tekuila
+import tekuila.teksavvy
+import tekuila.startca
 import xmlrpclib
 from sys import exit
 
@@ -92,9 +101,18 @@ class TekuilaGet(ScanScript):
         key = self.get('Key')
         cap = self.get('Cap')
         ratio = self.get('Ratio')
-        tekq = tekuila.Tekuila(key, cap, ratio)
-        tekq.fetch_data()
-        if tekq.check_cap() or tekq.check_warn():
+        isp = self.get('isp')
+
+        if isp == "teksavvy":
+            api = tekuila.teksavvy.Teksavvy(key, cap, ratio)
+        elif isp == "startca":
+            api = tekuila.startca.StartCA(key, cap, ratio)
+        else:
+            print "[ERROR] Incorrect ISP"
+            return False
+
+        api.fetch_data()
+        if api.check_cap() or api.check_warn():
             print "[WARNING] Threshold exceeded, pausing downloads."
             server.pausedownload()
         else:
