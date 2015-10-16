@@ -103,20 +103,24 @@ class TekuilaGet(ScanScript):
         ratio = self.get('Ratio')
         isp = self.get('isp')
 
-        if isp == "teksavvy":
-            api = tekuila.teksavvy.Teksavvy(key, cap, ratio)
-        elif isp == "startca":
-            api = tekuila.startca.StartCA(key, cap, ratio)
-        else:
-            print "[ERROR] Incorrect ISP"
-            return False
+        try:
+            if isp == "teksavvy":
+                api = tekuila.teksavvy.Teksavvy(key, cap, ratio)
+            elif isp == "startca":
+                api = tekuila.startca.StartCA(key, cap, ratio)
+            else:
+                print "[ERROR] Incorrect ISP"
+                return False
 
-        api.fetch_data()
-        if api.check_cap() or api.check_warn():
-            print "[WARNING] Threshold exceeded, pausing downloads."
+            api.fetch_data()
+            if api.check_cap() or api.check_warn():
+                print "[WARNING] Threshold exceeded, pausing downloads."
+                server.pausedownload()
+            else:
+                print "[DETAIL] Under threshold, no actions needed."
+        except:
+            print "[WARNING] Tekuila Error, pausing downloads for safety."
             server.pausedownload()
-        else:
-            print "[DETAIL] Under threshold, no actions needed."
 
         return True
 
